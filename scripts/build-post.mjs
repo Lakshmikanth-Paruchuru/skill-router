@@ -1,6 +1,6 @@
 /**
  * Builds the external blog post as a Word document.
- *   node docs/build-post.mjs
+ *   node scripts/build-post.mjs
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -160,9 +160,10 @@ function spacer() {
   return new Paragraph({ spacing: { before: 0, after: 120 }, children: [] });
 }
 
-const docsDir = path.dirname(fileURLToPath(import.meta.url));
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const docsDir = path.join(root, "docs");
 const diagramsDir = path.join(docsDir, "diagrams");
-const results = JSON.parse(fs.readFileSync(path.join(docsDir, "../eval/results.json"), "utf8"));
+const results = JSON.parse(fs.readFileSync(path.join(root, "eval/results.json"), "utf8"));
 const misses = results.production.misses || [];
 const abstained = misses.filter((item) => item.got === "(abstain)").length;
 const wrongSkill = misses.length - abstained;
@@ -582,7 +583,7 @@ const doc = new Document({
   }],
 });
 
-const out = path.join(path.dirname(fileURLToPath(import.meta.url)), "Load-the-Right-Skill-First.docx");
+const out = path.join(docsDir, "Load-the-Right-Skill-First.docx");
 const buffer = await Packer.toBuffer(doc);
 fs.writeFileSync(out, buffer);
 console.log(out);

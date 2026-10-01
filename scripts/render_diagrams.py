@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Render the blog diagrams. Pillow only. Output: docs/diagrams/*.png"""
+"""Render the blog diagrams. Pillow only. Output is embedded into the Word document."""
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
-OUT = Path(__file__).resolve().parent / "diagrams"
+OUT = Path(__file__).resolve().parent.parent / "docs" / "diagrams"
 OUT.mkdir(exist_ok=True)
 
 NAVY = (27, 58, 75)
