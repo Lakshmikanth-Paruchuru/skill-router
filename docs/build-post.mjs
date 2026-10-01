@@ -340,7 +340,7 @@ const doc = new Document({
         [
           ["Suggested slug", "load-the-right-skill-first"],
           ["Tags", "AI agents, Salesforce, skill routing, developer tools, Claude, Cursor"],
-          ["Code", "github.com/lparuchuru-titan/skill-router"],
+          ["Code", "github.com/Lakshmikanth-Paruchuru/skill-router"],
           ["Length", "About 2,200 words"],
         ],
         [2200, 7880],
@@ -519,7 +519,7 @@ const doc = new Document({
         spacing: { before: 0, after: 160, line: 288 },
         children: [
           run("The reference implementation is "),
-          linkRun("https://github.com/lparuchuru-titan/skill-router", "github.com/lparuchuru-titan/skill-router"),
+          linkRun("https://github.com/Lakshmikanth-Paruchuru/skill-router", "github.com/Lakshmikanth-Paruchuru/skill-router"),
           run(". It ships sample skills so the eval can be rerun, plus the MCP server, the hook, and eval/prompts.jsonl. Point SKILL_ROUTER_SKILLS_DIR at your own skills, or at skills/ from forcedotcom/sf-skills, and the same server loads those instead. Wire it into any MCP client:"),
         ],
       }),
@@ -560,7 +560,7 @@ const doc = new Document({
       ], { after: 40 }),
       para([
         run("Reference code: ", { size: 20, color: MUTED }),
-        linkRun("https://github.com/lparuchuru-titan/skill-router", "github.com/lparuchuru-titan/skill-router"),
+        linkRun("https://github.com/Lakshmikanth-Paruchuru/skill-router", "github.com/Lakshmikanth-Paruchuru/skill-router"),
       ], { after: 40 }),
       para([
         run("September 30, 2026", { size: 20, color: MUTED, italics: true }),

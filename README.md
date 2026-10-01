@@ -26,7 +26,7 @@ The match is a normal keyword match, weighted so a rare word counts more than a 
 ## Try it
 
 ```bash
-git clone https://github.com/lparuchuru-titan/skill-router.git
+git clone https://github.com/Lakshmikanth-Paruchuru/skill-router.git
 cd skill-router
 node scripts/generate-index.mjs
 ```
