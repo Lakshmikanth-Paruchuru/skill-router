@@ -53,6 +53,29 @@ function run(text, opts = {}) {
   });
 }
 
+// File names, paths, tool names, skill ids, and env vars. Order matters: longer paths first.
+const INLINE_CODE = /(?:[\w.-]+|<name>)(?:\/(?:[\w.-]+|<name>))+|\b[\w.-]+\.(?:mjs|jsonl|json|md|py)\b|\bSKILL_ROUTER_[A-Z0-9_]+\b|\b(?:find_skill|list_skills|read_skill|search_topics|read_topic)\b|\b(?:platform|automation|dx)-[a-z0-9]+(?:-[a-z0-9]+)+\b|\bskills\//g;
+
+function codeRun(text, size) {
+  return run(text, { font: "Menlo", size: size || 20, bold: true, color: NAVY });
+}
+
+function proseRuns(text, opts = {}) {
+  const parts = [];
+  const re = new RegExp(INLINE_CODE.source, "g");
+  let last = 0;
+  let match = re.exec(text);
+  while (match) {
+    if (match.index > last) parts.push(run(text.slice(last, match.index), opts));
+    parts.push(codeRun(match[0], opts.size || 22));
+    last = match.index + match[0].length;
+    match = re.exec(text);
+  }
+  if (last < text.length) parts.push(run(text.slice(last), opts));
+  if (!parts.length) parts.push(run(text, opts));
+  return parts;
+}
+
 function para(children, extras = {}) {
   return new Paragraph({
     spacing: { before: extras.before ?? 0, after: extras.after ?? 160, line: 288 },
@@ -62,7 +85,7 @@ function para(children, extras = {}) {
 }
 
 function body(text, extras = {}) {
-  return para([run(text)], extras);
+  return para(proseRuns(text), extras);
 }
 
 function rich(parts, extras = {}) {
@@ -90,7 +113,7 @@ function bullet(text) {
   return new Paragraph({
     numbering: { reference: "post-bullets", level: 0 },
     spacing: { before: 40, after: 60, line: 276 },
-    children: [run(text)],
+    children: proseRuns(text),
   });
 }
 
@@ -98,7 +121,7 @@ function step(text, instance = 0) {
   return new Paragraph({
     numbering: { reference: "post-steps", level: 0, instance },
     spacing: { before: 40, after: 60, line: 276 },
-    children: [run(text)],
+    children: proseRuns(text),
   });
 }
 
@@ -123,7 +146,7 @@ function callout(text) {
             children: [
               new Paragraph({
                 spacing: { before: 0, after: 0, line: 276 },
-                children: [run(text, { italics: true })],
+                children: proseRuns(text, { italics: true }),
               }),
             ],
           }),
@@ -173,7 +196,7 @@ function code(lines) {
   return lines.map((line, index) => new Paragraph({
     shading: { type: ShadingType.CLEAR, fill: CODE_BG },
     spacing: { before: index === 0 ? 80 : 0, after: index === lines.length - 1 ? 80 : 0, line: 240 },
-    children: [run(line.length ? line : " ", { font: "Menlo", size: 18, color: "1A2830" })],
+    children: [run(line.length ? line : " ", { font: "Menlo", size: 20, bold: true, color: NAVY })],
   }));
 }
 
@@ -189,7 +212,7 @@ function cell(text, width, opts = {}) {
     children: [
       new Paragraph({
         spacing: { before: 0, after: 0 },
-        children: [run(text, { size: opts.size || 18, bold: !!opts.bold, color, font: "Arial" })],
+        children: proseRuns(String(text), { size: opts.size || 18, bold: !!opts.bold, color }),
       }),
     ],
   });
@@ -218,7 +241,7 @@ function table(headers, rows, widths) {
 function linkRun(url, label) {
   return new ExternalHyperlink({
     link: url,
-    children: [new TextRun({ text: label, font: "Arial", size: 22, style: "Hyperlink" })],
+    children: [new TextRun({ text: label, font: "Menlo", size: 20, bold: true, style: "Hyperlink" })],
   });
 }
 
@@ -520,7 +543,7 @@ const doc = new Document({
         children: [
           run("The reference implementation is "),
           linkRun("https://github.com/Lakshmikanth-Paruchuru/skill-router", "github.com/Lakshmikanth-Paruchuru/skill-router"),
-          run(". It ships sample skills so the eval can be rerun, plus the MCP server, the hook, and eval/prompts.jsonl. Point SKILL_ROUTER_SKILLS_DIR at your own skills, or at skills/ from forcedotcom/sf-skills, and the same server loads those instead. Wire it into any MCP client:"),
+          ...proseRuns(". It ships sample skills so the eval can be rerun, plus the MCP server, the hook, and eval/prompts.jsonl. Point SKILL_ROUTER_SKILLS_DIR at your own skills, or at skills/ from forcedotcom/sf-skills, and the same server loads those instead. Wire it into any MCP client:"),
         ],
       }),
       body("Replace the path with the real checkout. A relative path works only when the client starts in that directory."),
