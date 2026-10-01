@@ -167,7 +167,10 @@ const misses = results.production.misses || [];
 const abstained = misses.filter((item) => item.got === "(abstain)").length;
 const wrongSkill = misses.length - abstained;
 const scored = (id) => results.rows.find((item) => item.id === id);
-const pct = (n) => `${Number(n).toFixed(1)}%`;
+const pct = (n) => {
+  const value = Number(n);
+  return `${Number.isInteger(value) ? String(value) : value.toFixed(1)}%`;
+};
 const fires = (item) => `${item.falseFires}/${results.prompts.outOfScope}`;
 
 function figure(file, alt, width, height, caption) {
@@ -345,7 +348,6 @@ const doc = new Document({
       }),
     },
     children: [
-      para([run("DRAFT FOR EXTERNAL PUBLICATION", { size: 16, bold: true, color: GOLD })], { after: 40 }),
       new Paragraph({
         spacing: { before: 80, after: 80 },
         children: [run("Load the right skill first", { size: 48, bold: true, color: NAVY })],
@@ -356,19 +358,7 @@ const doc = new Document({
       para([
         run("Lakshmikanth Paruchuru", { size: 20, bold: true, color: NAVY }),
         run("   ·   September 30, 2026", { size: 20, color: MUTED }),
-      ], { after: 160 }),
-
-      table(
-        ["Field", "Value"],
-        [
-          ["Suggested slug", "load-the-right-skill-first"],
-          ["Tags", "AI agents, Salesforce, skill routing, developer tools, Claude, Cursor"],
-          ["Code", "github.com/Lakshmikanth-Paruchuru/skill-router"],
-          ["Length", "About 2,200 words"],
-        ],
-        [2200, 7880],
-      ),
-      spacer(),
+      ], { after: 200 }),
 
       body("A year ago, a skill library was a novelty. Now it is the default. Teams publish folders of SKILL.md files for Claude, Cursor, and every other coding agent that will read them. Salesforce teams have been early and loud about it: one skill to write Apex, another to run tests, another to deploy, another to grant field access, another to scan the diff. The library grows every week. The agent does not get better at the same rate."),
       body("The miss is not the missing skill. The miss is the prompt. A person types “add a formula field and make sure the existing permission set can see it,” and the agent either loads nothing and improvises, or loads one nearby skill and follows only half the job. Ninety good playbooks in a folder do not help if the turn loads zero of them, or loads the field skill and never the permission-set skill the prompt also asked for."),
@@ -400,12 +390,12 @@ const doc = new Document({
         [4200, 5880],
       ),
       spacer(),
-      body("Twelve skills is already enough to collide. “Test” appears in three of them. “Field” appears in two. “Deploy” is a neighbor of “retrieve.” A keyword scan that stops at the first hit will send a coverage question to the skill that generates tests, and a retrieve question to the skill that deploys. The person did not ask for a bigger library. They asked for the prompt to land on the right row."),
+      body("Twelve skills is already enough to collide. “Test” appears in two of them. “Field” appears in two. “Deploy” is a neighbor of “retrieve.” A keyword scan that stops at the first hit will send a coverage question to the skill that generates tests, and a retrieve question to the skill that deploys. The person did not ask for a bigger library. They asked for the prompt to land on the right row."),
       body("Watch a few prompts move through the router. These lines are in eval/prompts.jsonl."),
-      bullet("“Write a SOQL query for accounts created this week.” That is one job. The query skill loads. The deploy skill and the Apex skill stay on disk."),
-      bullet("“Run the Apex tests and tell me the code coverage.” Coverage belongs to the skill that runs tests, not the one that writes a new test. One skill loads: platform-apex-test-run."),
-      bullet("“Add a formula field for renewal date and grant field-level security on the sales permission set.” That is two jobs. The field skill and the permission-set skill both load. A prompt that only asks for the formula field loads only the field skill. The permission-set skill does not come along unless the prompt asked for access."),
-      bullet("“What is a good lasagna recipe.” Nothing in the library is about dinner. The router returns nothing, and the agent does not invent an Apex procedure."),
+      bullet("“Write a SOQL query for accounts created this week”. That is one job. The query skill loads. The deploy skill and the Apex skill stay on disk."),
+      bullet("“Run the Apex tests and tell me the code coverage”. Coverage belongs to the skill that runs tests, not the one that writes a new test. One skill loads: platform-apex-test-run."),
+      bullet("“Add a formula field for renewal date and grant field-level security on the sales permission set”. That is two jobs. The field skill and the permission-set skill both load. A prompt that only asks for the formula field loads only the field skill. The permission-set skill does not come along unless the prompt asked for access."),
+      bullet("“What is a good lasagna recipe”. Nothing in the library is about dinner. The router returns nothing, and the agent does not invent an Apex procedure."),
       body("That is the help. The library can hold dozens or hundreds of skills. The prompt pays for the skills it asked for, and no others. Context stays small, the guardrails in those skills actually run, and a prompt that is not yours does not get a random playbook stapled to it."),
       ...figure(
         "01-route.png",
@@ -470,7 +460,7 @@ const doc = new Document({
       body("A generator walks skills/ and reads each SKILL.md. It keeps the routing signal and throws away the procedure: directory name, frontmatter name, description, and the keywords line. Multi-word job phrases come from that keywords line. Single words are also taken from the description, and they affect the score only. It writes two artifacts from the same pass."),
       bullet("router/skills-index.json is the catalog the server scores against."),
       bullet("ROUTER.md is the same catalog for a person."),
-      body("The body of the skill is not in the index. That choice came from a measurement, which is in the bake-off below. The procedure is loaded later, on purpose, by a separate tool, after the route has already been decided."),
+      body("The body of the skill is not in the index. That choice came from a measurement later in this post. The procedure is loaded later, on purpose, by a separate tool, after the route has already been decided."),
       body("If a skill ships a folder of curated notes rather than a single procedure, the generator also rebuilds a topic index for that folder. Routing still picks the skill. A second, simpler search picks the note."),
 
       h1("The tools"),
@@ -520,7 +510,7 @@ const doc = new Document({
       ),
       spacer(),
       body(`The shipped approach, matching the name and the one-line description, puts a needed skill first ${pct(scored("bm25").recallAt1)} of the time (${scored("bm25").recallAt1Count} of ${results.prompts.inScope}) and answers ${fires(scored("bm25"))} unrelated prompts. On those same ${results.prompts.inScope} prompts, the skills it returned were exactly the skills the prompt needed ${pct(scored("bm25").exactSet)} of the time (${scored("bm25").exactSetCount} of ${results.prompts.inScope}). Simply counting words in common ties the first-skill number on this small catalog, and then keeps returning neighboring skills the prompt did not ask for. The two also split when we search the body of the skill file.`),
-      body(`Searching the whole SKILL.md answers ${fires(scored("bm25-body"))} unrelated prompts. Skill files share a lot of ordinary teaching language: “use this skill when the user…” That shared language is enough to answer a prompt that should have been left alone. The one-line description already has the words that matter. The rest of the file is for after the choice.`),
+      body(`Searching the whole SKILL.md answers ${fires(scored("bm25-body"))} unrelated prompts. Skill files share ordinary teaching language. Several of the samples open with “Use this skill”. That shared language is enough to answer a prompt that should have been left alone. The one-line description already has the words that matter. The rest of the file is for after the choice.`),
       body("This repo does not include a search that treats two differently worded sentences as the same idea, so this post does not quote one. The four rows above are the comparison you can rerun from the files in the repo."),
       callout("The body of a skill is context for doing the task. It is noise for choosing the task. Index the description. Load the body only after the skill has been chosen."),
       spacer(),
